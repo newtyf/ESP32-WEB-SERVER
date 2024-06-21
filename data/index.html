@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control LED</title>
+  <style>
+    html {
+      font-family: Helvetica;
+      display: inline-block;
+      margin: 0px auto;
+      text-align: center;
+    }
+
+    body {
+      margin-top: 50px;
+    }
+
+    h1 {
+      color: #444444;
+      margin: 50px auto 30px;
+    }
+
+    h3 {
+      color: #444444;
+      margin-bottom: 50px;
+    }
+
+    .button {
+      outline: none;
+      display: block;
+      background-color: #3498db;
+      border: none;
+      color: white;
+      padding: 13px 30px;
+      text-decoration: none;
+      font-size: 25px;
+      margin: 0px auto 35px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .button-on {
+      background-color: #3498db;
+    }
+
+    .button-on:active {
+      background-color: #2980b9;
+    }
+
+    .button-off {
+      background-color: #34495e;
+    }
+
+    .button-off:active {
+      background-color: #2c3e50;
+    }
+
+    p {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>ESP32 Servidor WEB</h1>
+  <h3>Usando Modo Access Point</h3>
+
+  <div id="led-on">
+    <p>LED1 Estado: ON</p><button class="button button-off" onclick="SetLedInOff()">OFF</a>
+  </div>
+
+  <div id="led-off">
+    <p>LED1 Estado: OFF</p><button class="button button-on" onclick="SetLedInOn()">ON</a>
+  </div>
+
+  <script>
+    const $ledOn = document.getElementById("led-off")
+    const $ledOff = document.getElementById("led-on")
+    $ledOff.style.display = 'none'
+
+    async function SetLedInOn () {
+      const res = await fetch("/led1on")
+      console.log(res)
+      $ledOff.style.display = 'block'
+      $ledOn.style.display = 'none'
+    }
+
+    async function SetLedInOff () {
+      const res = await fetch("/led1off")
+      console.log(res)
+      $ledOff.style.display = 'none'
+      $ledOn.style.display = 'block'
+    }
+
+  </script>
+</body>
+</html>
