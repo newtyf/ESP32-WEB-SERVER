@@ -1,62 +1,99 @@
-
+#include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
-#include <WebServer.h>
-#include "SPIFFS.h"
+#include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
+
+#include "SensorDHT22.h"
+#include "controllers/WebServerController.h"
+
+// Aca se definió el SSID y PASSWORD
 #include <secrets.h>
 
 /* Añade tu SSID & Clave para acceder a tu Wifi */
-const char* ssid = SSID;  // Tu SSID
-const char* password = PASSWORD;  //Tu Clave
-String html = "";
+const char *ssid = SSID;
+const char *password = PASSWORD;
 
-WebServer server(80);
+// Timer variables
+unsigned long lastTime = 0;
+unsigned long timerDelay = 30000;
 
-#define LED 2
-bool LEDEstado = LOW;
+const int Bomba = 32;
+const int FOCO = 33;
+const int buzzerPin = 26;
+const int Hum = 25;
+const int Vent = 27;
+const int DHT = 12;
 
-void handle_OnConnect() {
-  LEDEstado = LOW; // 1
-  Serial.println("LED: OFF"); // 2
-  server.send(200, "text/html", html); // 3
+SensorDHT22 sensorDHT22(DHT, buzzerPin, FOCO, Vent);
+
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+
+void notifyClients(String sensorReadings) {
+
+  JsonDocument doc;
+  doc["event"] = "newTemperature";
+  doc["payload"] = sensorReadings;
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  ws.textAll(jsonString);
 }
 
-void handle_led1on() {
-  LEDEstado = HIGH; //1
-  Serial.println("GPIO4 Estado: ON"); // 2
-  server.send(200, "text/plain", "1"); //3
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    data[len] = 0;
+    String message = (char*)data;
+    // Check if the message is "getReadings"
+    if (strcmp((char*)data, "getReadings") == 0) {
+      // if it is, send current sensor readings
+      float temperatura_DATO = sensorDHT22.leerTemperatura();
+      Serial.print(String(temperatura_DATO));
+      notifyClients(String(temperatura_DATO));
+    }
+  }
 }
 
-void handle_led1off() {
-  LEDEstado = LOW;
-  Serial.println("GPIO4 Estado: OFF");
-  server.send(200, "text/plain", "0");
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      break;
+    case WS_EVT_DISCONNECT:
+      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      break;
+    case WS_EVT_DATA:
+      handleWebSocketMessage(arg, data, len);
+      break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+      break;
+  }
 }
 
-void handle_NotFound() {
-  server.send(404, "text/plain", "La pagina no existe");
+void initWebSocket() {
+  ws.onEvent(onEvent);
+  server.addHandler(&ws);
 }
 
-void setup() {
+void setup()
+{
 
   Serial.begin(9600);
-  pinMode(LED, OUTPUT);
-
-  if(!SPIFFS.begin(true)){
+  if (!SPIFFS.begin(true))
+  {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
   Serial.println("SPIFFS montado correctamente");
 
-  File file = SPIFFS.open("/index.html");
-  if(!file){
-    Serial.println("Failed to open file for reading");
-    return;
-  }
+  initWebSocket();
 
-  while(file.available()){
-    html += (char)file.read();
-  }
-  file.close();
+  WebServerController webServerController;
+  webServerController.setupRoutes(server);
 
   WiFi.mode(WIFI_AP);
   Serial.println("");
@@ -67,23 +104,18 @@ void setup() {
   Serial.println("AP IP address: ");
   Serial.print(IP);
 
-  server.on("/", handle_OnConnect); // 1
-  server.on("/led1on", handle_led1on); // 2
-  server.on("/led1off", handle_led1off); // 2
-  server.onNotFound(handle_NotFound); // 3
-
   server.begin();
   Serial.println("Servidor HTTP iniciado");
 }
 
-void loop() {
-  server.handleClient();
-  if (LEDEstado)
+void loop()
+{
+  if ((millis() - lastTime) > timerDelay)
   {
-    digitalWrite(LED, HIGH);
+    float temperatura_DATO = sensorDHT22.leerTemperatura();
+    Serial.print(String(temperatura_DATO));
+    notifyClients(String(temperatura_DATO));
+    lastTime = millis();
   }
-  else
-  {
-    digitalWrite(LED, LOW);
-  }
+  ws.cleanupClients();
 }
