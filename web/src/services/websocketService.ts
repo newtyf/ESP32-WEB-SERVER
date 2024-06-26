@@ -62,5 +62,5 @@ export class WebSocketService {
 }
 
 export const websocketService = new WebSocketService(
-  "ws://socket-rps.apps.newtyf.com/gamehub"
+  "/ws"
 );

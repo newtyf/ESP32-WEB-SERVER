@@ -23,7 +23,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     websocketService.on("newHumidity", () => setGroundHumidity("22.00"));
-    websocketService.on("newTemperature", () => setAmbientTemperature("18.00"));
+    websocketService.on("newTemperature", (payload) => setAmbientTemperature(payload));
     websocketService.on("systemStatus", () => setSystemStatus(true));
     websocketService.on("ventiladorStatus", () => setVentiladorStatus(true));
     websocketService.on("focoStatus", () => setFocoStatus(true));
