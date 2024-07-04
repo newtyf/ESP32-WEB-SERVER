@@ -4,6 +4,7 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
+#include "ManualControl.h"
 #include "SensorDHT22.h"
 #include "SensorHumedad.h"
 #include "SensorUltrasonico.h"
@@ -36,6 +37,7 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 WebServerController webServerController(server, ws);
 
+ManualControl manualControl(FOCO, Vent, Bomba, 15, buzzerPin);
 SensorHumedad sensorHumedad(Hum, Bomba, buzzerPin, FOCO, Vent);
 SensorDHT22 sensorDHT22(DHT, buzzerPin, FOCO, Vent);
 SensorUltrasonico sensorUltrasonico(trigger, echo, buzzerPin);
@@ -134,7 +136,7 @@ void loop()
     lastTime = millis();
   }
 
-  if (true)
+  if (!manualControl.activado)
   {
     sensorDHT22.leerTemperatura();
     sensorDHT22.leerHumedad();

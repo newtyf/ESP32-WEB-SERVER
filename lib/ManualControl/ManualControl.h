@@ -11,9 +11,9 @@ private:
   int pinBomba;
   int pinActivador;
   int buzzerpin;
-  bool activado;
 
 public:
+  bool activado;
   ManualControl(int pinLed, int pinVentilador, int pinBomba, int pinActivador, int buzzerpin);
   void encenderLed();
   void apagarLed();
