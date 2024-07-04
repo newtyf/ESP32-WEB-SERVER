@@ -20,7 +20,7 @@ const char *password = PASSWORD;
 
 // Timer variables
 unsigned long lastTime = 0;
-unsigned long timerDelay = 30000;
+unsigned long timerDelay = 10000;
 
 // ESP32 pins
 const int Bomba = 32;
@@ -28,7 +28,7 @@ const int FOCO = 33;
 const int buzzerPin = 25;
 const int Hum = 34;
 const int Vent = 27;
-const int DHT = 2;
+const int DHT = 4;
 
 const int trigger = 12;
 const int echo = 13;
@@ -70,6 +70,27 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
       payload ? manualControl.activar() : manualControl.desactivar();
       String activado = manualControl.activado ? "true" : "false";
       notifyClients("manualControl", activado);
+    }
+
+    if (doc["event"] == "changeVentilador")
+    {
+      String activado = payload ? "true" : "false";
+      payload ? manualControl.encenderVentilador() : manualControl.apagarVentilador();
+      notifyClients("ventiladorStatus", activado);
+    }
+
+    if (doc["event"] == "changeFoco")
+    {
+      String activado = payload ? "true" : "false";
+      payload ? manualControl.encenderLed() : manualControl.apagarLed();
+      notifyClients("focoStatus", activado);
+    }
+
+    if (doc["event"] == "changePumpWater")
+    {
+      String activado = payload ? "true" : "false";
+      payload ? manualControl.encenderBomba() : manualControl.apagarBomba();
+      notifyClients("pumpWaterStatus", activado);
     }
   }
 }

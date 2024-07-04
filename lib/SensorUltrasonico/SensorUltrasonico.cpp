@@ -129,7 +129,7 @@ void SensorUltrasonico::calculateLevel()
 float SensorUltrasonico::getLevel()
 {
   digitalWrite(trigPin, HIGH);
-  delay(1);
+  delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   timeOn = pulseIn(echoPin, HIGH);
   level = timeOn / 59;

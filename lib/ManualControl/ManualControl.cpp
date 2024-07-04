@@ -81,4 +81,5 @@ void ManualControl::desactivar()
   apagarLed();
   apagarVentilador();
   apagarBomba();
+  noTone(buzzerpin);
 }

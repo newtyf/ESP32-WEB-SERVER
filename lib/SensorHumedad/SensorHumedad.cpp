@@ -17,11 +17,11 @@ void SensorHumedad::verificarHumedad()
 {// MODIFICACIONEEES
 //  CAMBIEN LA HUMEDAD MINIMA DE 2000 A 1600
 	int lectura = analogRead(humedadPin); // Lee la lectura analógica del pin
-	float humedad_min = 1600.00;					// Valor mínimo del rango del sensor
-	float humedad_max = 4095.00;					// Valor máximo del rango del sensor
+	float humedad_min = 4095.00;					// Valor mínimo del rango del sensor
+	float humedad_max = 1600.00;					// Valor máximo del rango del sensor
 
 	//  ALTERE LA FORMULA PARA EL PORSENTAJE PORQUE NO SALIA ANTES
-	float porcentajeHumedad = (((lectura - humedad_min)* 100.0 )/ (humedad_max - humedad_min)) ;
+		float porcentajeHumedad =  100.0 - ((lectura - humedad_max) * 100.0) / (humedad_min - humedad_max);
 	if (porcentajeHumedad < 0) {
     	porcentajeHumedad = 0;
   	}else if (porcentajeHumedad > 100) {
@@ -43,11 +43,11 @@ void SensorHumedad::verificarHumedad()
 float SensorHumedad::Humedad_Datos()
 {
 	int lectura = analogRead(humedadPin); // Lee la lectura analógica del pin
-	float humedad_min = 1600.00;					// Valor mínimo del rango del sensor
-	float humedad_max = 4095.00;					// Valor máximo del rango del sensor
+	float humedad_min = 4095.00;					// Valor mínimo del rango del sensor
+	float humedad_max = 1600.00;					// Valor máximo del rango del sensor
 
 	// Calcula el porcentaje de humedad usando la fórmula de interpolación lineal
-	float porcentajeHumedad = (((lectura - humedad_min) * 100.0)/ (humedad_max - humedad_min)) ;
+	float porcentajeHumedad =  100.0 - ((lectura - humedad_max) * 100.0) / (humedad_min - humedad_max);
 	 if (porcentajeHumedad < 0) {
     porcentajeHumedad = 0;
   } else if (porcentajeHumedad > 100) {
