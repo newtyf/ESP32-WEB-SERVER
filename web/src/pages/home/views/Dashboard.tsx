@@ -17,7 +17,7 @@ export const Dashboard = () => {
   const [ventiladorStatus, setVentiladorStatus] = useState<boolean>(false);
   const [pumpWaterStatus, setPumpWaterStatus] = useState<boolean>(false);
   const [focoStatus, setFocoStatus] = useState<boolean>(false);
-  const [waterTankLevel, setWaterTankLevel] = useState<number>(100);
+  const [waterTankLevel, setWaterTankLevel] = useState<number>(25);
 
   const { websocketService } = useContext(WebSocketContext)!;
 
