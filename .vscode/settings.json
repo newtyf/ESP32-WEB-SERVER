@@ -2,15 +2,20 @@
   "cSpell.words": [
     "Activador",
     "APIP",
+    "buzzerpin",
     "GPIO",
     "lucide",
     "Lucide",
+    "Maximo",
+    "Minimo",
+    "SENSORULTRASONICO",
     "ssid",
     "Ultrasonico"
   ],
   "conventionalCommits.scopes": [
     "Frontend",
-    "esp32"
+    "esp32",
+    "ESP32"
   ],
   "files.associations": {
     "*.jsx": "javascriptreact",
