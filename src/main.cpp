@@ -61,13 +61,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
   {
     data[len] = 0;
     String message = (char *)data;
-    // Check if the message is "getReadings"
-    if (strcmp((char *)data, "getReadings") == 0)
+    JsonDocument doc;
+    deserializeJson(doc, message);
+    // Check if the event is "changeManualControl"
+    bool payload = doc["payload"];
+    if (doc["event"] == "changeManualControl")
     {
-      // if it is, send current sensor readings
-      float temperatura_DATO = sensorDHT22.leerTemperatura_Datos();
-      Serial.print(String(temperatura_DATO));
-      notifyClients("newTemperature", String(temperatura_DATO));
+      payload ? manualControl.activar() : manualControl.desactivar();
+      String activado = manualControl.activado ? "true" : "false";
+      notifyClients("manualControl", activado);
     }
   }
 }
@@ -129,9 +131,11 @@ void loop()
     float humedad_DATO = sensorHumedad.Humedad_Datos();
     int level_DATO = sensorUltrasonico.getLevel();
 
-    notifyClients(String(temperatura_DATO), "newTemperature");
-    notifyClients(String(humedad_DATO), "newHumidity");
-    notifyClients(String(level_DATO), "waterTankLevel");
+    String activado = manualControl.activado ? "true" : "false";
+    notifyClients("manualControl", activado);
+    notifyClients("newTemperature", String(temperatura_DATO, 2));
+    notifyClients("newHumidity", String(humedad_DATO, 2));
+    notifyClients("waterTankLevel", String(level_DATO));
 
     lastTime = millis();
   }
