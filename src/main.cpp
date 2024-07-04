@@ -18,6 +18,7 @@ const char *password = PASSWORD;
 unsigned long lastTime = 0;
 unsigned long timerDelay = 30000;
 
+// ESP32 pins
 const int Bomba = 32;
 const int FOCO = 33;
 const int buzzerPin = 26;
@@ -25,75 +26,75 @@ const int Hum = 25;
 const int Vent = 27;
 const int DHT = 12;
 
-SensorDHT22 sensorDHT22(DHT, buzzerPin, FOCO, Vent);
-
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+WebServerController webServerController(server, ws);
 
-void notifyClients(String sensorReadings) {
+SensorDHT22 sensorDHT22(DHT, buzzerPin, FOCO, Vent);
 
-  JsonDocument doc;
-  doc["event"] = "newTemperature";
-  doc["payload"] = sensorReadings;
+void notifyClients(String eventName, String sensorReadings)
+{
+    JsonDocument doc;
+    doc["event"] = eventName;
+    doc["payload"] = sensorReadings;
 
-  String jsonString;
-  serializeJson(doc, jsonString);
+    String jsonString;
+    serializeJson(doc, jsonString);
 
-  ws.textAll(jsonString);
+    ws.textAll(jsonString);
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-    data[len] = 0;
-    String message = (char*)data;
-    // Check if the message is "getReadings"
-    if (strcmp((char*)data, "getReadings") == 0) {
-      // if it is, send current sensor readings
-      float temperatura_DATO = sensorDHT22.leerTemperatura();
-      Serial.print(String(temperatura_DATO));
-      notifyClients(String(temperatura_DATO));
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
+{
+    AwsFrameInfo *info = (AwsFrameInfo *)arg;
+    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+    {
+        data[len] = 0;
+        String message = (char *)data;
+        // Check if the message is "getReadings"
+        if (strcmp((char *)data, "getReadings") == 0)
+        {
+            // if it is, send current sensor readings
+            float temperatura_DATO = sensorDHT22.leerTemperatura_Datos();
+            Serial.print(String(temperatura_DATO));
+            notifyClients("newTemperature", String(temperatura_DATO));
+        }
     }
-  }
 }
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
+    switch (type)
+    {
     case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      break;
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        break;
     case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
-      break;
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        break;
     case WS_EVT_DATA:
-      handleWebSocketMessage(arg, data, len);
-      break;
+        handleWebSocketMessage(arg, data, len);
+        break;
     case WS_EVT_PONG:
     case WS_EVT_ERROR:
-      break;
-  }
-}
-
-void initWebSocket() {
-  ws.onEvent(onEvent);
-  server.addHandler(&ws);
+        break;
+    }
 }
 
 void setup()
 {
-
   Serial.begin(9600);
+
   if (!SPIFFS.begin(true))
   {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+    Serial.println("Ocurrió un error mientras se montaba el SPIFFS");
     return;
   }
   Serial.println("SPIFFS montado correctamente");
 
-  initWebSocket();
 
-  WebServerController webServerController;
-  webServerController.setupRoutes(server);
+  webServerController.setupRoutes();
+  webServerController.setupSocket(onEvent);
 
   WiFi.mode(WIFI_AP);
   Serial.println("");
@@ -104,7 +105,8 @@ void setup()
   Serial.println("AP IP address: ");
   Serial.print(IP);
 
-  server.begin();
+  webServerController.begin();
+
   Serial.println("Servidor HTTP iniciado");
 }
 
@@ -112,9 +114,8 @@ void loop()
 {
   if ((millis() - lastTime) > timerDelay)
   {
-    float temperatura_DATO = sensorDHT22.leerTemperatura();
-    Serial.print(String(temperatura_DATO));
-    notifyClients(String(temperatura_DATO));
+    float temperatura_DATO = sensorDHT22.leerTemperatura_Datos();
+    notifyClients("newTemperature", String(temperatura_DATO));
     lastTime = millis();
   }
   ws.cleanupClients();

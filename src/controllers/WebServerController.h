@@ -3,9 +3,16 @@
 
 #include <ESPAsyncWebServer.h>
 
-class WebServerController {
+class WebServerController
+{
 public:
-    void setupRoutes(AsyncWebServer& server);
+    AsyncWebServer &server;
+    AsyncWebSocket &ws;
+
+    WebServerController(AsyncWebServer &server, AsyncWebSocket &ws);
+    void begin();
+    void setupRoutes();
+    void setupSocket(std::function<void(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)> onEvent);
 };
 
 #endif
