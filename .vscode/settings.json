@@ -2,6 +2,7 @@
   "cSpell.words": [
     "Activador",
     "APIP",
+    "buildfs",
     "buzzerpin",
     "GPIO",
     "lucide",
@@ -10,7 +11,10 @@
     "Minimo",
     "SENSORULTRASONICO",
     "ssid",
-    "Ultrasonico"
+    "Ultrasonico",
+    "upesy",
+    "uploadfs",
+    "wroom"
   ],
   "conventionalCommits.scopes": [
     "Frontend",

@@ -10,6 +10,7 @@
 
   ```sh
   # /web
+  cd web
   npm install
   ```
 
@@ -20,8 +21,28 @@
   npm run dev
   ```
 
+2. Build for production
+
+  ```sh
+  # /web
+  npm run build
+  ```
+
 ## 👾 Build and Run for production ESP32
-1. Upload project to esp32
+
+1. Build & Upload frontend web to esp32
+
+  ```sh
+  # You need to move the output from /web/dist folder inside /data folder, after that should be build the filesystem image with:
+
+  pio run --target buildfs --environment upesy_wroom
+
+  # then load the file system with:
+
+  pio run --target uploadfs --environment upesy_wroom
+  ```
+
+2. Upload project to esp32
 
   ```sh
   pio run --target upload --upload-port <port>
@@ -29,9 +50,11 @@
 
 ### 🛠 Built with
 
+- ESP32
+- Arduino
+- ESP Async WebServer
 - React Typescript + SWC
 - Shadcn/ui
-- ESP Async WebServer
 
 ### 💻 Author
 
