@@ -1,7 +1,7 @@
 import { Droplets, Thermometer, Waves, Wind, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-import { ModeToggle } from "../../components/mode-toggle";
+import { ModeToggle } from "@/components/mode-toggle";
 import { CardForMetrics } from "../components/CardForMetrics";
 import { DashboardLayout } from "../layout/DashboardLayout";
 import { ListRecentActivities } from "../components/ListRecentActivities";
