@@ -1,33 +1,57 @@
 #include "Arduino.h"
 #include "SensorHumedad.h"
-SensorHumedad::SensorHumedad(int humedadPin, int bombaPin, int buzzerPin, int ledPin, int vent) {
+SensorHumedad::SensorHumedad(int humedadPin, int bombaPin, int buzzerPin, int ledPin, int vent)
+{
 	this->humedadPin = humedadPin;
 	this->bombaPin = bombaPin;
 	this->buzzerPin = buzzerPin;
 	this->ledPin = ledPin;
-  this->vent = vent;
+	this->vent = vent;
 	pinMode(bombaPin, OUTPUT);
 	pinMode(buzzerPin, OUTPUT);
 	pinMode(ledPin, OUTPUT);
-  pinMode(vent, OUTPUT);
+	pinMode(vent, OUTPUT);
 }
 
-void SensorHumedad::verificarHumedad() {
-	float humedad = analogRead(humedadPin) / 1400.0 * 100.0;
-	if (humedad < 50) {
+void SensorHumedad::verificarHumedad()
+{// MODIFICACIONEEES
+//  CAMBIEN LA HUMEDAD MINIMA DE 2000 A 1600
+	int lectura = analogRead(humedadPin); // Lee la lectura analógica del pin
+	float humedad_min = 1600.00;					// Valor mínimo del rango del sensor
+	float humedad_max = 4095.00;					// Valor máximo del rango del sensor
+
+	//  ALTERE LA FORMULA PARA EL PORSENTAJE PORQUE NO SALIA ANTES
+	float porcentajeHumedad = (((lectura - humedad_min)* 100.0 )/ (humedad_max - humedad_min)) ;
+	if (porcentajeHumedad < 0) {
+    	porcentajeHumedad = 0;
+  	}else if (porcentajeHumedad > 100) {
+    porcentajeHumedad = 100;
+	}
+	if (porcentajeHumedad < 30)
+	{
 		digitalWrite(bombaPin, HIGH);
-    tone(buzzerPin, 2456,1000);
-    tone(buzzerPin, 2920,1000);
-    delay(500);
-	} else {
+		tone(buzzerPin, 2456, 1000);
+		tone(buzzerPin, 2920, 1000);
+	}
+	else
+	{
 		digitalWrite(bombaPin, LOW);
 		noTone(buzzerPin);
-	
 	}
 }
+//AQUI IGUAL!!!!!!!!!!!
+float SensorHumedad::Humedad_Datos()
+{
+	int lectura = analogRead(humedadPin); // Lee la lectura analógica del pin
+	float humedad_min = 1600.00;					// Valor mínimo del rango del sensor
+	float humedad_max = 4095.00;					// Valor máximo del rango del sensor
 
-float SensorHumedad:: Humedad_Datos(){
-  	float humedad = analogRead(humedadPin) / 1400.0 * 100.0;
-    return humedad;
+	// Calcula el porcentaje de humedad usando la fórmula de interpolación lineal
+	float porcentajeHumedad = (((lectura - humedad_min) * 100.0)/ (humedad_max - humedad_min)) ;
+	 if (porcentajeHumedad < 0) {
+    porcentajeHumedad = 0;
+  } else if (porcentajeHumedad > 100) {
+    porcentajeHumedad = 100;
+  }
+	return porcentajeHumedad;
 }
-

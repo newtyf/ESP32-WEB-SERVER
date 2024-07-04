@@ -16,5 +16,4 @@ class SensorHumedad {
     void verificarHumedad();
     float Humedad_Datos();
 };
-
 #endif

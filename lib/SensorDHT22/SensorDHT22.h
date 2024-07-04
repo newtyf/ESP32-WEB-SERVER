@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <DHT.h>
+#include <ESPAsyncWebServer.h>
 
 class SensorDHT22 {
   private:
@@ -12,10 +13,10 @@ class SensorDHT22 {
     int LED;
     int VENT;
   public:
-    float leerTemperatura();
-    float leerHumedad();
-    void mostrar();
     SensorDHT22(int dataPin,int buzzerPin,int LED,int VENT);
+    void leerTemperatura();
+    void leerHumedad();
+    float leerTemperatura_Datos();
+    float leerHumedad_Datos();
 };
-
 #endif // SENSORDHT22_H

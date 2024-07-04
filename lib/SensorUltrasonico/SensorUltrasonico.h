@@ -1,24 +1,29 @@
 #ifndef SENSORULTRASONICO_H
 #define SENSORULTRASONICO_H
 
-
 #include <Arduino.h>
-class SensorUltrasonico {
-    private:
-    const int trigPin;
-    const int echoPin;
-    int level;
-    int timeOn;
-    unsigned long lastDataTime;
-    bool dataReceived;
-    const int buzzerPin = 9;
+#include <ESPAsyncWebServer.h>
 
-  public:
-    SensorUltrasonico(const int trigPin, const int echoPin, const int buzzerPin);
-    void begin();
-    void calculateLevel();
-    int getLevel();
-    
+class SensorUltrasonico
+{
+private:
+  const int trigPin;
+  const int echoPin;
+  long level;
+  long timeOn;
+  int valorMinimo;
+  int valorMaximo;
+
+  unsigned long lastDataTime;
+  bool dataReceived;
+
+  const int buzzerPin;
+
+public:
+  SensorUltrasonico(const int trigPin, const int echoPin, const int buzzerPin);
+  void begin();
+  void calculateLevel();
+  float getLevel();
 };
 
 #endif // SENSORULTRASONICO_H
