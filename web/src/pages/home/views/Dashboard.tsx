@@ -11,7 +11,7 @@ import { useContext, useEffect, useState } from "react";
 import { WebSocketContext } from "@/context/WebSocketContext";
 
 export const Dashboard = () => {
-  const [systemStatus, setSystemStatus] = useState<boolean>(false);
+  const [manualControl, setManualControl] = useState<boolean>(false);
   const [groundHumidity, setGroundHumidity] = useState<string>();
   const [ambientTemperature, setAmbientTemperature] = useState<string>();
   const [ventiladorStatus, setVentiladorStatus] = useState<boolean>(false);
@@ -22,50 +22,73 @@ export const Dashboard = () => {
   const { websocketService } = useContext(WebSocketContext)!;
 
   useEffect(() => {
-    websocketService.on("newHumidity", () => setGroundHumidity("22.00"));
-    websocketService.on("newTemperature", (payload) => setAmbientTemperature(payload));
-    websocketService.on("systemStatus", () => setSystemStatus(true));
-    websocketService.on("ventiladorStatus", () => setVentiladorStatus(true));
-    websocketService.on("focoStatus", () => setFocoStatus(true));
-    websocketService.on("pumpWaterStatus", () => setPumpWaterStatus(true));
-    websocketService.on("waterTankLevel", () => setWaterTankLevel(1200));
+    websocketService.on("newHumidity", (payload) => setGroundHumidity(payload));
+    websocketService.on("newTemperature", (payload) =>
+      setAmbientTemperature(payload)
+    );
+    websocketService.on("waterTankLevel", (payload) =>
+      setWaterTankLevel(parseInt(payload))
+    );
+    websocketService.on("manualControl", (payload) =>
+      setManualControl(payload === "true")
+    );
+    websocketService.on("ventiladorStatus", (payload) =>
+      setVentiladorStatus(payload === "true")
+    );
+    websocketService.on("focoStatus", (payload) =>
+      setFocoStatus(payload === "true")
+    );
+    websocketService.on("pumpWaterStatus", (payload) =>
+      setPumpWaterStatus(payload === "true")
+    );
 
     return () => {};
   }, [websocketService]);
 
+  const onChangeManualControl = () => {
+    websocketService.emit("changeManualControl", !manualControl);
+    setManualControl(!manualControl);
+  };
+
   const onChangeVentilador = () => {
-    //? so here we emit the event to change the status of ventilador
+    websocketService.emit("changeVentilador", !ventiladorStatus);
     setVentiladorStatus(!ventiladorStatus);
   };
 
   const onChangeFoco = () => {
-    //? so here we emit the event to change the status of foco
+    websocketService.emit("changeFoco", !focoStatus);
     setFocoStatus(!focoStatus);
   };
 
   const onChangePumpWater = () => {
-    //? so here we emit the event to change the status of foco
+    websocketService.emit("changePumpWater", !pumpWaterStatus);
     setPumpWaterStatus(!pumpWaterStatus);
   };
 
   return (
     <DashboardLayout>
-      <header className='flex justify-between border p-4'>
+      <header className='flex flex-col md:flex-row justify-between border p-4'>
         <h1 className='scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-4xl'>
           Sistema de Riego
         </h1>
-        <div className='flex items-center'>
-          <p className='mr-3'>
-            Estado del sistema:
-            <span
-              className={
-                "block lg:ml-1 lg:inline " +
-                (systemStatus ? "text-green-400" : "text-red-500")
-              }
-            >
-              {systemStatus ? "FUNCIONANDO" : "APAGADO"}
+        <div className='flex justify-between mt-3 md:mt-0'>
+          <h3 className='text-sm md:mr-4'>
+            Control Manual:
+            <span className='flex mt-1'>
+              <Switch
+                checked={manualControl}
+                onCheckedChange={onChangeManualControl}
+              />
+              <p
+                className={
+                  "ml-2 scroll-m-20 text-sm font-extrabold tracking-tight " +
+                  (manualControl ? "text-green-400" : "text-red-500")
+                }
+              >
+                {manualControl ? "Encendido" : "Apagado"}
+              </p>
             </span>
-          </p>
+          </h3>
           <ModeToggle />
         </div>
       </header>
@@ -103,6 +126,7 @@ export const Dashboard = () => {
               <Switch
                 checked={ventiladorStatus}
                 onCheckedChange={onChangeVentilador}
+                disabled={!manualControl}
               />
               <h3
                 className={
@@ -116,7 +140,11 @@ export const Dashboard = () => {
           </CardForMetrics>
           <CardForMetrics title='Estado del Foco' Icon={Zap}>
             <div className='flex'>
-              <Switch checked={focoStatus} onCheckedChange={onChangeFoco} />
+              <Switch
+                checked={focoStatus}
+                onCheckedChange={onChangeFoco}
+                disabled={!manualControl}
+              />
               <h3
                 className={
                   "ml-2 scroll-m-20 text-sm font-extrabold tracking-tight " +
@@ -129,7 +157,11 @@ export const Dashboard = () => {
           </CardForMetrics>
           <CardForMetrics title='Estado de la Bomba' Icon={Waves}>
             <div className='flex'>
-              <Switch checked={pumpWaterStatus} onCheckedChange={onChangePumpWater} />
+              <Switch
+                checked={pumpWaterStatus}
+                onCheckedChange={onChangePumpWater}
+                disabled={!manualControl}
+              />
               <h3
                 className={
                   "ml-2 scroll-m-20 text-sm font-extrabold tracking-tight " +
